@@ -51,7 +51,10 @@
         </div>
       </div>
       <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="showTab('students', this)">
+        <button class="nav-item active" onclick="showTab('access', this)">
+          <i class="fas fa-key"></i> Grant Access
+        </button>
+        <button class="nav-item" onclick="showTab('students', this)">
           <i class="fas fa-users"></i> Students
         </button>
         <button class="nav-item" onclick="showTab('papers', this)">
@@ -93,6 +96,41 @@
         </div>
       </header>
 
+      <!-- ── Grant Access Tab ── -->
+      <div class="tab-content active" id="tab-access">
+        <div class="access-grid">
+
+          <!-- Add Gmail Box -->
+          <div class="form-card">
+            <h2><i class="fas fa-key"></i> Grant Access by Gmail</h2>
+            <p>Student login venna kalin Gmail eka add karanna. Login wenakota automatic access labennawa.</p>
+            <div class="access-form">
+              <div class="form-group">
+                <label for="accessEmail">Student Gmail Address</label>
+                <input type="email" id="accessEmail" placeholder="student@gmail.com" />
+              </div>
+              <button class="btn-submit" onclick="grantAccessByEmail()" id="grantBtn">
+                <i class="fas fa-check-circle"></i> Grant Access
+              </button>
+              <div class="form-msg" id="accessMsg"></div>
+            </div>
+          </div>
+
+          <!-- Access List -->
+          <div class="form-card">
+            <h2><i class="fas fa-list"></i> Access List</h2>
+            <p>Mee gmail walata access denna. Login wenakota automatic unlock wenawa.</p>
+            <button class="btn-refresh" onclick="loadAccessList()" style="margin-bottom:16px;">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <div id="accessListWrap">
+              <div class="loading-row"><div class="spinner"></div> Loading...</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- ── Students Tab ── -->
       <div class="tab-content active" id="tab-students">
         <div class="content-bar">
@@ -106,13 +144,14 @@
               <tr>
                 <th>Student</th>
                 <th>Email</th>
+                <th>Phone</th>
                 <th>Joined</th>
                 <th>Payment Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="studentsBody">
-              <tr><td colspan="5" class="loading-row"><div class="spinner"></div> Loading...</td></tr>
+              <tr><td colspan="6" class="loading-row"><div class="spinner"></div> Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -184,11 +223,11 @@
   <!-- ═══ FIREBASE ═══ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fSignOut, onAuthStateChanged }
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut as fSignOut, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       getFirestore, collection, getDocs, doc, getDoc,
-      updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy
+      setDoc, updateDoc, addDoc, deleteDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ══════════════════════════════════════════
@@ -243,16 +282,114 @@
     });
 
     document.getElementById("gateLoginBtn").onclick = async () => {
-      try { await signInWithPopup(auth, provider); }
-      catch (e) { if (e.code !== "auth/popup-closed-by-user") alert("Login failed."); }
+      try { await signInWithRedirect(auth, provider); }
+      catch (e) { alert("Login failed."); }
     };
 
+    getRedirectResult(auth).catch(() => {});
+
     window.doSignOut = async () => { await fSignOut(auth); };
+
+    // ─── GRANT ACCESS BY EMAIL ───
+    window.grantAccessByEmail = async function() {
+      const emailInput = document.getElementById("accessEmail");
+      const btn  = document.getElementById("grantBtn");
+      const msg  = document.getElementById("accessMsg");
+      const email = emailInput.value.trim().toLowerCase();
+
+      if (!email || !email.includes("@")) {
+        msg.textContent = "Valid Gmail address ekak denna.";
+        msg.className   = "form-msg error-msg";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner-sm"></div> Adding...';
+      msg.textContent = "";
+      msg.className   = "form-msg";
+
+      try {
+        // Save to preApproved collection
+        const safeKey = email.replace(/\./g, "_").replace(/@/g, "__");
+        await setDoc(doc(db, "preApproved", safeKey), {
+          email:     email,
+          grantedAt: serverTimestamp(),
+          hasPaid:   true
+        });
+
+        // Also update user doc if they already logged in
+        const usersSnap = await getDocs(collection(db, "users"));
+        usersSnap.forEach(async (d) => {
+          if ((d.data().email || "").toLowerCase() === email) {
+            await updateDoc(doc(db, "users", d.id), { hasPaid: true });
+          }
+        });
+
+        msg.textContent = `✓ Access granted to ${email}`;
+        msg.className   = "form-msg success";
+        emailInput.value = "";
+        await loadAccessList();
+      } catch(err) {
+        msg.textContent = "Error: " + (err.message || err.code);
+        msg.className   = "form-msg error-msg";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Grant Access';
+      }
+    };
+
+    window.revokeAccessByEmail = async function(safeKey, email) {
+      if (!confirm(`Revoke access for ${email}?`)) return;
+      try {
+        await deleteDoc(doc(db, "preApproved", safeKey));
+        // Also revoke from users if logged in
+        const usersSnap = await getDocs(collection(db, "users"));
+        usersSnap.forEach(async (d) => {
+          if ((d.data().email || "").toLowerCase() === email) {
+            await updateDoc(doc(db, "users", d.id), { hasPaid: false });
+          }
+        });
+        await loadAccessList();
+      } catch(err) {
+        alert("Error: " + err.message);
+      }
+    };
+
+    window.loadAccessList = async function() {
+      document.getElementById("accessListWrap").innerHTML =
+        '<div class="loading-row"><div class="spinner"></div></div>';
+      try {
+        const snap = await getDocs(collection(db, "preApproved"));
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+
+        if (list.length === 0) {
+          document.getElementById("accessListWrap").innerHTML =
+            '<p style="color:var(--muted);font-size:14px;padding:12px 0;">No access granted yet.</p>';
+          return;
+        }
+
+        document.getElementById("accessListWrap").innerHTML = list.map(item => `
+          <div class="access-item">
+            <div class="access-email">
+              <i class="fas fa-check-circle" style="color:var(--green);"></i>
+              <span>${item.email}</span>
+            </div>
+            <button class="btn-toggle revoke" onclick="revokeAccessByEmail('${item.id}', '${item.email}')">
+              <i class="fas fa-times"></i> Revoke
+            </button>
+          </div>
+        `).join("");
+      } catch(err) {
+        document.getElementById("accessListWrap").innerHTML =
+          `<p style="color:var(--red);font-size:13px;">Error: ${err.message}</p>`;
+      }
+    };
 
     // ─── STUDENTS ───
     window.loadStudents = async function() {
       document.getElementById("studentsBody").innerHTML =
-        '<tr><td colspan="5" class="loading-row"><div class="spinner"></div> Loading...</td></tr>';
+        '<tr><td colspan="6" class="loading-row"><div class="spinner"></div> Loading...</td></tr>';
 
       try {
         const snap = await getDocs(collection(db, "users"));
@@ -264,14 +401,14 @@
         renderStudents(allStudents);
       } catch (e) {
         document.getElementById("studentsBody").innerHTML =
-          '<tr><td colspan="5" class="loading-row error">Error loading students.</td></tr>';
+          '<tr><td colspan="6" class="loading-row error">Error loading students.</td></tr>';
       }
     };
 
     function renderStudents(students) {
       if (students.length === 0) {
         document.getElementById("studentsBody").innerHTML =
-          '<tr><td colspan="5" class="loading-row">No students registered yet.</td></tr>';
+          '<tr><td colspan="6" class="loading-row">No students registered yet.</td></tr>';
         return;
       }
       document.getElementById("studentsBody").innerHTML = students.map(s => `
@@ -283,6 +420,7 @@
             </div>
           </td>
           <td class="email-cell">${s.email || "-"}</td>
+          <td class="email-cell">${s.phone || "<span style='color:#94a3b8;'>Not added</span>"}</td>
           <td>${s.createdAt?.toDate ? formatDate(s.createdAt.toDate()) : "-"}</td>
           <td>
             ${s.hasPaid
@@ -401,8 +539,10 @@
         e.target.reset();
         await loadPapersAdmin();
       } catch (err) {
-        msg.textContent = "Error adding paper. Please try again.";
+        const errText = err.code || err.message || "Unknown error";
+        msg.textContent = "Error: " + errText;
         msg.className   = "form-msg error-msg";
+        alert("Paper add error:\n" + errText);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-plus"></i> Add Paper';
@@ -426,7 +566,8 @@
       document.getElementById("tab-" + tab).classList.add("active");
       btn.classList.add("active");
       document.getElementById("pageTitle").textContent =
-        { students: "Students", papers: "Papers", addPaper: "Add Paper" }[tab];
+        { access: "Grant Access", students: "Students", papers: "Papers", addPaper: "Add Paper" }[tab];
+      if (tab === "access") loadAccessList();
     };
 
     window.toggleSidebar = function() {
