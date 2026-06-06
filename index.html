@@ -485,14 +485,18 @@
         return;
       }
       const paid = currentUserData?.hasPaid;
-      document.getElementById("papersGrid").innerHTML = filtered.map(p => `
-        <div class="paper-card ${paid ? '' : 'paper-locked'}"
-          onclick="openPaper('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p.pdfUrl||'')}')">
+      document.getElementById("papersGrid").innerHTML = filtered.map(p => {
+        const canView = p.isFree || paid;
+        return `
+        <div class="paper-card ${canView ? '' : 'paper-locked'}"
+          onclick="openPaper('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p.pdfUrl||'')}','${p.isFree ? 'free' : 'paid'}')">
           <div class="paper-card-top">
             <div class="paper-type-badge ${p.type}">${getPaperTypeLabel(p.type)}</div>
-            ${paid
-              ? '<div class="paper-lock open"><i class="fas fa-lock-open"></i></div>'
-              : '<div class="paper-lock locked"><i class="fas fa-lock"></i></div>'}
+            ${p.isFree
+              ? '<div class="paper-lock open" title="Free Paper"><i class="fas fa-lock-open"></i></div>'
+              : canView
+                ? '<div class="paper-lock open"><i class="fas fa-lock-open"></i></div>'
+                : '<div class="paper-lock locked"><i class="fas fa-lock"></i></div>'}
           </div>
           <div class="paper-icon"><i class="fas fa-file-pdf"></i></div>
           <div class="paper-info">
@@ -501,15 +505,18 @@
             <div class="paper-meta">
               <span><i class="fas fa-calendar"></i> ${p.year || 2026}</span>
               <span><i class="fas fa-tag"></i> ${getPaperTypeLabel(p.type)}</span>
+              ${p.isFree ? '<span style="color:var(--green);font-weight:700;"><i class="fas fa-gift"></i> Free</span>' : ''}
             </div>
           </div>
           <div class="paper-footer">
-            ${paid
-              ? `<button class="btn-view-paper"><i class="fas fa-eye"></i> View Paper</button>`
-              : `<button class="btn-unlock-paper"><i class="fas fa-lock"></i> Pay to Unlock</button>`}
+            ${p.isFree
+              ? `<button class="btn-view-paper" style="background:linear-gradient(135deg,var(--green),var(--green-light));"><i class="fas fa-eye"></i> View Free Paper</button>`
+              : canView
+                ? `<button class="btn-view-paper"><i class="fas fa-eye"></i> View Paper</button>`
+                : `<button class="btn-unlock-paper"><i class="fas fa-lock"></i> Pay to Unlock</button>`}
           </div>
-        </div>
-      `).join("");
+        </div>`;
+      }).join("");
     }
 
     function getPaperTypeLabel(type) {
@@ -517,16 +524,25 @@
     }
 
     // ── OPEN PAPER ──
-    window.openPaper = function(id, titleEnc, pdfEnc) {
+    window.openPaper = function(id, titleEnc, pdfEnc, accessType) {
       const title  = decodeURIComponent(titleEnc);
       const pdfUrl = decodeURIComponent(pdfEnc);
+      const isFree = accessType === "free";
 
-      // Not logged in → show login modal
+      // Free paper → open directly (no login needed)
+      if (isFree) {
+        if (!pdfUrl) { alert("PDF not available yet."); return; }
+        document.getElementById("pdfModalTitle").textContent = title;
+        document.getElementById("pdfFrame").src = pdfUrl;
+        document.getElementById("pdfModal").classList.add("active");
+        return;
+      }
+      // Paid paper — not logged in → login prompt
       if (!currentUser) {
         document.getElementById("loginPromptModal").classList.add("active");
         return;
       }
-      // Logged in but not paid → show payment modal
+      // Logged in but not paid → payment modal
       if (!currentUserData?.hasPaid) {
         document.getElementById("paymentPaperTitle").textContent = title;
         document.getElementById("paymentEmailNote").textContent  = `Your Gmail: ${currentUser.email}`;
