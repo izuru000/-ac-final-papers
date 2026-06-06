@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AC Final Papers | 2026 A/L Biology Special</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+
+      <!-- LEFT: Logo + Profile (after login) -->
+      <div class="nav-left">
+        <a href="#" class="nav-logo">
+          <div class="logo-icon"><i class="fas fa-flask"></i></div>
+          <div class="logo-text">
+            <span class="logo-main">AC Final Papers</span>
+            <span class="logo-sub">2026 A/L Biology Special</span>
+          </div>
+        </a>
+        <!-- Profile avatar on LEFT side (shows after login) -->
+        <div id="navProfileLeft" style="display:none;" class="nav-profile-left" onclick="openProfileModal()">
+          <img id="navAvatarLeft" src="" alt="Profile" class="nav-avatar-left" />
+          <div class="nav-profile-info">
+            <span id="navNameLeft" class="nav-profile-name"></span>
+            <span id="navStatusLeft" class="nav-profile-status"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: Nav links -->
+      <div class="nav-links">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#papers" class="nav-link">Papers</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+
+      <!-- RIGHT: WhatsApp + Login / Logout -->
+      <div class="nav-actions">
+        <button class="btn-whatsapp-nav" onclick="openWhatsApp()">
+          <i class="fab fa-whatsapp"></i>
+          <span>WhatsApp</span>
+        </button>
+        <!-- Login button (before login) -->
+        <div id="authSection">
+          <button class="btn-login" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+            Sign in with Google
+          </button>
+        </div>
+        <!-- Logout + Admin (after login) -->
+        <div id="userSection" style="display:none;" class="nav-right-user">
+          <a href="admin.html" id="adminLink" style="display:none;" class="btn-admin-nav">
+            <i class="fas fa-cog"></i> Admin
+          </a>
+          <button class="btn-signout-nav" onclick="doSignOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </div>
+      </div>
+
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#home" onclick="closeMobileMenu()">Home</a>
+      <a href="#papers" onclick="closeMobileMenu()">Papers</a>
+      <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="hero-circle c1"></div>
+      <div class="hero-circle c2"></div>
+      <div class="hero-circle c3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i>
+        2026 A/L Biology Special
+      </div>
+      <h1 class="hero-title">
+        Ace Your<br/>
+        <span class="hero-gradient">A/L Biology</span><br/>
+        Exam
+      </h1>
+      <p class="hero-desc">
+        Access premium Biology past papers, model papers, and structured question papers crafted for 2026 A/L students. Study smart, score high.
+      </p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="scrollToPapers()">
+          <i class="fas fa-book-open"></i> View Papers
+        </button>
+        <button class="btn-outline" onclick="openWhatsApp()">
+          <i class="fab fa-whatsapp"></i> Contact Us
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>50+</strong><span>Papers</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>100%</strong><span>Syllabus</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>2026</strong><span>Updated</span></div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="hero-card-float card-f1"><i class="fas fa-dna"></i><span>Genetics</span></div>
+      <div class="hero-card-float card-f2"><i class="fas fa-leaf"></i><span>Plant Biology</span></div>
+      <div class="hero-card-float card-f3"><i class="fas fa-heartbeat"></i><span>Human Bio</span></div>
+      <div class="hero-main-visual"><i class="fas fa-microscope"></i></div>
+    </div>
+  </section>
+
+  <!-- ═══ FEATURES ═══ -->
+  <section class="features">
+    <div class="container">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon blue"><i class="fas fa-file-pdf"></i></div>
+          <h3>Premium Papers</h3>
+          <p>Carefully curated Biology papers including past papers, model papers, and practice sets.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon green"><i class="fas fa-lock-open"></i></div>
+          <h3>Instant Access</h3>
+          <p>Pay once and get unlimited access to all Biology papers for the entire 2026 A/L season.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon purple"><i class="fas fa-chalkboard-teacher"></i></div>
+          <h3>Expert Curated</h3>
+          <p>All papers are reviewed and selected by experienced Biology teachers and examiners.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PAPERS SECTION ═══ -->
+  <section class="papers-section" id="papers">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">2026 Target Papers</div>
+        <h2 class="section-title">2026 A/L Biology Target Papers</h2>
+        <p class="section-desc">Browse our complete collection. Login and complete payment to unlock full access to all papers.</p>
+      </div>
+
+      <div class="papers-tabs">
+        <button class="tab-btn active" onclick="filterPapers('all', this)">All Papers</button>
+        <button class="tab-btn" onclick="filterPapers('past', this)">Past Papers</button>
+        <button class="tab-btn" onclick="filterPapers('model', this)">Model Papers</button>
+        <button class="tab-btn" onclick="filterPapers('mcq', this)">MCQ Papers</button>
+        <button class="tab-btn" onclick="filterPapers('essay', this)">Essay Papers</button>
+      </div>
+
+      <!-- Not logged in -->
+      <div class="not-logged-msg" id="notLoggedMsg" style="display:none;">
+        <div class="msg-card">
+          <i class="fas fa-user-circle"></i>
+          <h3>Login to View Papers</h3>
+          <p>Sign in with your Google account to browse 2026 A/L Biology papers.</p>
+          <button class="btn-primary" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px;height:20px;"/>
+            Sign in with Google
+          </button>
+        </div>
+      </div>
+
+      <!-- Papers Grid -->
+      <div class="papers-grid" id="papersGrid">
+        <div class="loading-papers"><div class="spinner"></div><p>Loading papers...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA SECTION ═══ -->
+  <section class="cta-section" id="contact">
+    <div class="container">
+      <div class="cta-card">
+        <div class="cta-content">
+          <div class="cta-badge">Get Access Now</div>
+          <h2>Ready to Excel in Biology?</h2>
+          <p>Contact us on WhatsApp to pay and unlock instant access to all 2026 A/L Biology papers.</p>
+          <div class="cta-btns">
+            <button class="btn-whatsapp-big" onclick="openWhatsApp()">
+              <i class="fab fa-whatsapp"></i> Contact us on WhatsApp
+            </button>
+            <button class="btn-primary" onclick="signInWithGoogle()">
+              <i class="fas fa-sign-in-alt"></i> Login Now
+            </button>
+          </div>
+        </div>
+        <div class="cta-deco"><i class="fas fa-dna"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <div class="logo-icon"><i class="fas fa-flask"></i></div>
+            <div class="logo-text">
+              <span class="logo-main">AC Final Papers</span>
+              <span class="logo-sub">2026 A/L Biology Special</span>
+            </div>
+          </div>
+          <p>Premium Biology papers for 2026 A/L students. Study smart, score high.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="#home">Home</a>
+          <a href="#papers">Papers</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact Us</h4>
+          <button class="btn-whatsapp-footer" onclick="openWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Contact us on WhatsApp
+          </button>
+          <p class="footer-note">For payment and access queries</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 AC Final Papers. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ PROFILE MODAL ═══ -->
+  <div class="modal-overlay" id="profileModal" onclick="closeProfileModal(event)">
+    <div class="modal-box profile-modal-box">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-circle" style="color:var(--primary);margin-right:8px;"></i>My Profile</h3>
+        <button class="modal-close" onclick="closeProfileModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-content">
+          <div class="profile-avatar-section">
+            <img id="profileAvatar" src="" alt="Profile" class="profile-big-avatar" />
+            <div id="profileAccessBadge" class="profile-access-badge"></div>
+          </div>
+          <div class="profile-form">
+            <div class="profile-field">
+              <label><i class="fas fa-user"></i> Full Name</label>
+              <input type="text" id="profileName" placeholder="Your full name" />
+            </div>
+            <div class="profile-field">
+              <label><i class="fas fa-envelope"></i> Gmail</label>
+              <input type="text" id="profileEmail" disabled class="disabled-input" />
+            </div>
+            <div class="profile-field">
+              <label><i class="fas fa-phone"></i> Phone Number</label>
+              <input type="tel" id="profilePhone" placeholder="e.g. 0771234567" />
+            </div>
+            <div class="profile-status-card" id="profileStatusCard">
+              <!-- Filled by JS -->
+            </div>
+            <button class="btn-save-profile" onclick="saveProfile()" id="saveProfileBtn">
+              <i class="fas fa-save"></i> Save Profile
+            </button>
+            <div class="profile-save-msg" id="profileSaveMsg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PDF VIEWER MODAL ═══ -->
+  <div class="modal-overlay" id="pdfModal" onclick="closePdfModal(event)">
+    <div class="modal-box pdf-modal-box">
+      <div class="modal-header">
+        <h3 id="pdfModalTitle">Paper Title</h3>
+        <button class="modal-close" onclick="closePdfModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfFrame" src="" title="PDF Viewer" class="pdf-frame"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAYMENT MODAL ═══ -->
+  <div class="modal-overlay" id="paymentModal" onclick="closePaymentModal(event)">
+    <div class="modal-box payment-modal-box">
+      <div class="modal-header">
+        <h3><i class="fas fa-lock" style="color:#f59e0b;margin-right:8px;"></i>Access Required</h3>
+        <button class="modal-close" onclick="closePaymentModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="payment-content">
+          <div class="payment-icon"><i class="fas fa-file-pdf"></i></div>
+          <h3 id="paymentPaperTitle">Paper Title</h3>
+          <p>You need to pay the class fee to access this paper.</p>
+          <div class="payment-steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-text">
+                <strong>Contact us on WhatsApp</strong>
+                <span>Send your Gmail and request access</span>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-text">
+                <strong>Complete Payment</strong>
+                <span>Pay the class fee as instructed</span>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-text">
+                <strong>Get Instant Access</strong>
+                <span>Access all papers immediately after verification</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-whatsapp-big" onclick="openWhatsAppPayment()" style="width:100%;justify-content:center;">
+            <i class="fab fa-whatsapp"></i> Contact us on WhatsApp
+          </button>
+          <p class="payment-email-note" id="paymentEmailNote"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FIREBASE ═══ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyB0_MwAK5naZyhCN_qXEHyNvVyZnJRUnfg",
+      authDomain:        "ac-final-e14a7.firebaseapp.com",
+      databaseURL:       "https://ac-final-e14a7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "ac-final-e14a7",
+      storageBucket:     "ac-final-e14a7.firebasestorage.app",
+      messagingSenderId: "349745996549",
+      appId:             "1:349745996549:web:68c318f32958d37e260d6c",
+      measurementId:     "G-N4SL1WHTZN"
+    };
+
+    const WHATSAPP_NUMBER = "94XXXXXXXXX";
+    const ADMIN_EMAILS    = ["ianupama835@gmail.com", "dther58@gmail.com"];
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser     = null;
+    let currentUserData = null;
+    let allPapers       = [];
+    let activeFilter    = "all";
+
+    // ── AUTH STATE ──
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const snap    = await getDoc(userRef);
+        if (!snap.exists()) {
+          await setDoc(userRef, {
+            email:     user.email,
+            name:      user.displayName || "",
+            photoURL:  user.photoURL || "",
+            phone:     "",
+            hasPaid:   false,
+            createdAt: serverTimestamp()
+          });
+        }
+        currentUserData = (await getDoc(userRef)).data();
+        showUserUI(user, currentUserData);
+        loadPapers();
+      } else {
+        showLoginUI();
+        showNotLoggedMessage();
+      }
+    });
+
+    function showUserUI(user, userData) {
+      // Hide login button
+      document.getElementById("authSection").style.display  = "none";
+      // Show logout + admin buttons
+      document.getElementById("userSection").style.display  = "flex";
+
+      // LEFT SIDE PROFILE
+      const leftProfile = document.getElementById("navProfileLeft");
+      leftProfile.style.display = "flex";
+      document.getElementById("navAvatarLeft").src   = user.photoURL || "";
+      document.getElementById("navNameLeft").textContent = userData?.name || user.displayName?.split(" ")[0] || "Student";
+      document.getElementById("navStatusLeft").textContent = userData?.hasPaid ? "Access Active" : "Payment Pending";
+      document.getElementById("navStatusLeft").className = "nav-profile-status " + (userData?.hasPaid ? "status-paid" : "status-pending");
+
+      // Admin link
+      if (ADMIN_EMAILS.includes(user.email)) {
+        document.getElementById("adminLink").style.display = "inline-flex";
+      }
+    }
+
+    function showLoginUI() {
+      document.getElementById("authSection").style.display   = "block";
+      document.getElementById("userSection").style.display   = "none";
+      document.getElementById("navProfileLeft").style.display = "none";
+    }
+
+    function showNotLoggedMessage() {
+      document.getElementById("notLoggedMsg").style.display = "flex";
+      document.getElementById("papersGrid").innerHTML = "";
+    }
+
+    // ── LOAD PAPERS ──
+    async function loadPapers() {
+      document.getElementById("notLoggedMsg").style.display = "none";
+      document.getElementById("papersGrid").innerHTML =
+        `<div class="loading-papers"><div class="spinner"></div><p>Loading papers...</p></div>`;
+      try {
+        const snap = await getDocs(collection(db, "papers"));
+        allPapers  = [];
+        snap.forEach(d => allPapers.push({ id: d.id, ...d.data() }));
+        if (allPapers.length === 0) {
+          document.getElementById("papersGrid").innerHTML =
+            `<div class="no-papers"><i class="fas fa-folder-open"></i><p>No papers uploaded yet. Check back soon!</p></div>`;
+          return;
+        }
+        renderPapers(allPapers);
+      } catch {
+        document.getElementById("papersGrid").innerHTML =
+          `<div class="no-papers"><i class="fas fa-exclamation-circle"></i><p>Error loading papers.</p></div>`;
+      }
+    }
+
+    function renderPapers(papers) {
+      const filtered = activeFilter === "all" ? papers : papers.filter(p => p.type === activeFilter);
+      if (filtered.length === 0) {
+        document.getElementById("papersGrid").innerHTML =
+          `<div class="no-papers"><i class="fas fa-search"></i><p>No papers in this category.</p></div>`;
+        return;
+      }
+      const paid = currentUserData?.hasPaid;
+      document.getElementById("papersGrid").innerHTML = filtered.map(p => `
+        <div class="paper-card ${paid ? '' : 'paper-locked'}"
+          onclick="openPaper('${p.id}','${encodeURIComponent(p.title)}','${encodeURIComponent(p.pdfUrl||'')}')">
+          <div class="paper-card-top">
+            <div class="paper-type-badge ${p.type}">${getPaperTypeLabel(p.type)}</div>
+            ${paid
+              ? '<div class="paper-lock open"><i class="fas fa-lock-open"></i></div>'
+              : '<div class="paper-lock locked"><i class="fas fa-lock"></i></div>'}
+          </div>
+          <div class="paper-icon"><i class="fas fa-file-pdf"></i></div>
+          <div class="paper-info">
+            <h3 class="paper-title">${p.title}</h3>
+            <p class="paper-desc">${p.description || "2026 A/L Biology Paper"}</p>
+            <div class="paper-meta">
+              <span><i class="fas fa-calendar"></i> ${p.year || 2026}</span>
+              <span><i class="fas fa-tag"></i> ${getPaperTypeLabel(p.type)}</span>
+            </div>
+          </div>
+          <div class="paper-footer">
+            ${paid
+              ? `<button class="btn-view-paper"><i class="fas fa-eye"></i> View Paper</button>`
+              : `<button class="btn-unlock-paper"><i class="fas fa-lock"></i> Pay to Unlock</button>`}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function getPaperTypeLabel(type) {
+      return { past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay" }[type] || "Paper";
+    }
+
+    // ── OPEN PAPER ──
+    window.openPaper = function(id, titleEnc, pdfEnc) {
+      const title  = decodeURIComponent(titleEnc);
+      const pdfUrl = decodeURIComponent(pdfEnc);
+      if (!currentUserData?.hasPaid) {
+        document.getElementById("paymentPaperTitle").textContent = title;
+        document.getElementById("paymentEmailNote").textContent  =
+          currentUser ? `Your Gmail: ${currentUser.email}` : "";
+        document.getElementById("paymentModal").classList.add("active");
+        return;
+      }
+      if (!pdfUrl) { alert("PDF not available yet."); return; }
+      document.getElementById("pdfModalTitle").textContent = title;
+      document.getElementById("pdfFrame").src = pdfUrl;
+      document.getElementById("pdfModal").classList.add("active");
+    };
+
+    window.filterPapers = function(type, btn) {
+      activeFilter = type;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (allPapers.length > 0) renderPapers(allPapers);
+    };
+
+    // ── AUTH ──
+    window.signInWithGoogle = async function() {
+      try { await signInWithPopup(auth, provider); }
+      catch(e) { if (e.code !== "auth/popup-closed-by-user") alert("Login failed. Try again."); }
+    };
+
+    window.doSignOut = async function() { await firebaseSignOut(auth); };
+
+    // ── PROFILE MODAL ──
+    window.openProfileModal = function() {
+      if (!currentUser || !currentUserData) return;
+      document.getElementById("profileAvatar").src      = currentUser.photoURL || "";
+      document.getElementById("profileName").value      = currentUserData.name || currentUser.displayName || "";
+      document.getElementById("profileEmail").value     = currentUser.email || "";
+      document.getElementById("profilePhone").value     = currentUserData.phone || "";
+
+      const badge = document.getElementById("profileAccessBadge");
+      const card  = document.getElementById("profileStatusCard");
+      if (currentUserData.hasPaid) {
+        badge.innerHTML = '<span class="badge-paid"><i class="fas fa-check-circle"></i> Access Active</span>';
+        card.innerHTML  = `<div class="status-paid-card">
+          <i class="fas fa-check-circle"></i>
+          <div><strong>You have full access!</strong><span>All 2026 Biology papers are unlocked for you.</span></div>
+        </div>`;
+      } else {
+        badge.innerHTML = '<span class="badge-unpaid"><i class="fas fa-clock"></i> Payment Pending</span>';
+        card.innerHTML  = `<div class="status-pending-card">
+          <i class="fas fa-exclamation-circle"></i>
+          <div>
+            <strong>No Access Yet</strong>
+            <span>Pay the class fee to unlock all papers.</span>
+            <button class="btn-wa-small" onclick="openWhatsAppPayment()">
+              <i class="fab fa-whatsapp"></i> Contact on WhatsApp
+            </button>
+          </div>
+        </div>`;
+      }
+      document.getElementById("profileSaveMsg").textContent = "";
+      document.getElementById("profileModal").classList.add("active");
+    };
+
+    window.saveProfile = async function() {
+      const btn  = document.getElementById("saveProfileBtn");
+      const msg  = document.getElementById("profileSaveMsg");
+      const name = document.getElementById("profileName").value.trim();
+      const phone = document.getElementById("profilePhone").value.trim();
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner-sm"></div> Saving...';
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), { name, phone });
+        currentUserData.name  = name;
+        currentUserData.phone = phone;
+        // Update navbar
+        document.getElementById("navNameLeft").textContent = name || currentUser.displayName?.split(" ")[0] || "Student";
+        msg.textContent = "Profile saved!";
+        msg.className   = "profile-save-msg success";
+      } catch {
+        msg.textContent = "Error saving. Try again.";
+        msg.className   = "profile-save-msg error-msg";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Save Profile';
+      }
+    };
+
+    window.closeProfileModal = function(e) {
+      if (!e || e.target.id === "profileModal") {
+        document.getElementById("profileModal").classList.remove("active");
+      }
+    };
+
+    // ── WHATSAPP ──
+    window.openWhatsApp = function() {
+      const msg = encodeURIComponent("Hello! I'm interested in AC Final Papers - 2026 A/L Biology Special.");
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
+    };
+
+    window.openWhatsAppPayment = function() {
+      const email = currentUser ? currentUser.email : "my email";
+      const msg   = encodeURIComponent(
+        `Hello! I want to pay for AC Final Papers access.\nMy Gmail: ${email}\nPlease help me with payment for 2026 A/L Biology papers.`
+      );
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
+    };
+
+    // ── MODAL HELPERS ──
+    window.closePdfModal = function(e) {
+      if (!e || e.target.id === "pdfModal") {
+        document.getElementById("pdfModal").classList.remove("active");
+        document.getElementById("pdfFrame").src = "";
+      }
+    };
+    window.closePaymentModal = function(e) {
+      if (!e || e.target.id === "paymentModal") {
+        document.getElementById("paymentModal").classList.remove("active");
+      }
+    };
+    window.scrollToPapers = function() {
+      document.getElementById("papers").scrollIntoView({ behavior: "smooth" });
+    };
+  </script>
+
+  <script>
+    const navbar = document.getElementById("navbar");
+    window.addEventListener("scroll", () => navbar.classList.toggle("scrolled", window.scrollY > 20));
+    window.toggleMobileMenu = () => document.getElementById("mobileMenu").classList.toggle("open");
+    window.closeMobileMenu  = () => document.getElementById("mobileMenu").classList.remove("open");
+  </script>
+
+</body>
+</html>
