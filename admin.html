@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | AC Final Papers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- Checking admin access -->
+  <div class="auth-gate" id="authGate">
+    <div class="gate-card">
+      <div class="gate-logo">
+        <i class="fas fa-flask"></i>
+      </div>
+      <h2>Admin Panel</h2>
+      <p>Sign in with your admin Google account to access the dashboard.</p>
+      <button class="btn-google" id="gateLoginBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+        Sign in with Google
+      </button>
+      <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to website</a>
+    </div>
+  </div>
+
+  <!-- Not admin message -->
+  <div class="auth-gate" id="notAdminGate" style="display:none;">
+    <div class="gate-card">
+      <div class="gate-logo" style="background:#fee2e2; color:#ef4444;">
+        <i class="fas fa-ban"></i>
+      </div>
+      <h2>Access Denied</h2>
+      <p>Your account is not authorized to access the admin panel.</p>
+      <a href="index.html" class="btn-primary"><i class="fas fa-home"></i> Go to Website</a>
+    </div>
+  </div>
+
+  <!-- Main admin panel (hidden until admin verified) -->
+  <div id="adminPanel" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-flask"></i></div>
+        <div>
+          <div class="logo-main">AC Final Papers</div>
+          <div class="logo-sub">Admin Panel</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showTab('students', this)">
+          <i class="fas fa-users"></i> Students
+        </button>
+        <button class="nav-item" onclick="showTab('papers', this)">
+          <i class="fas fa-file-pdf"></i> Papers
+        </button>
+        <button class="nav-item" onclick="showTab('addPaper', this)">
+          <i class="fas fa-plus-circle"></i> Add Paper
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="admin-user">
+          <img id="adminAvatar" src="" alt="" />
+          <div>
+            <p id="adminName"></p>
+            <small id="adminEmail"></small>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="index.html" class="sidebar-link"><i class="fas fa-globe"></i> Website</a>
+          <button class="sidebar-link sign-out" onclick="doSignOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main">
+
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+          <h1 id="pageTitle">Students</h1>
+        </div>
+        <div class="header-right">
+          <div class="stat-chip"><i class="fas fa-users"></i> <span id="totalStudents">0</span> Students</div>
+          <div class="stat-chip green"><i class="fas fa-check-circle"></i> <span id="paidStudents">0</span> Paid</div>
+        </div>
+      </header>
+
+      <!-- ── Students Tab ── -->
+      <div class="tab-content active" id="tab-students">
+        <div class="content-bar">
+          <input type="text" class="search-input" id="studentSearch" placeholder="Search by name or email..." oninput="filterStudents()" />
+          <button class="btn-refresh" onclick="loadStudents()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="studentsTable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Email</th>
+                <th>Joined</th>
+                <th>Payment Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="studentsBody">
+              <tr><td colspan="5" class="loading-row"><div class="spinner"></div> Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Papers Tab ── -->
+      <div class="tab-content" id="tab-papers">
+        <div class="content-bar">
+          <button class="btn-refresh" onclick="loadPapersAdmin()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+
+        <div class="papers-admin-grid" id="papersAdminGrid">
+          <div class="loading-row"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+
+      <!-- ── Add Paper Tab ── -->
+      <div class="tab-content" id="tab-addPaper">
+        <div class="form-card">
+          <h2><i class="fas fa-file-pdf"></i> Add New Paper</h2>
+          <p>Add a Biology paper to the collection. Students with access can view it immediately.</p>
+
+          <form class="paper-form" onsubmit="addPaper(event)">
+            <div class="form-group">
+              <label for="paperTitle">Paper Title *</label>
+              <input type="text" id="paperTitle" required placeholder="e.g. 2025 A/L Biology Paper I" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="paperType">Paper Type *</label>
+                <select id="paperType" required>
+                  <option value="">Select type...</option>
+                  <option value="past">Past Paper</option>
+                  <option value="model">Model Paper</option>
+                  <option value="mcq">MCQ Paper</option>
+                  <option value="essay">Essay Paper</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="paperYear">Year</label>
+                <input type="number" id="paperYear" placeholder="2026" value="2026" min="2020" max="2030" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="paperDesc">Description</label>
+              <input type="text" id="paperDesc" placeholder="e.g. Complete Biology past paper with marking scheme" />
+            </div>
+            <div class="form-group">
+              <label for="paperPdfUrl">PDF URL *</label>
+              <input type="url" id="paperPdfUrl" required
+                placeholder="Google Drive: https://drive.google.com/file/d/FILE_ID/preview" />
+              <small class="form-hint">
+                <i class="fas fa-info-circle"></i>
+                Use Google Drive: Upload PDF → Share → "Anyone with the link" → Copy embed link
+                (<code>https://drive.google.com/file/d/FILE_ID/preview</code>)
+              </small>
+            </div>
+            <button type="submit" class="btn-submit" id="addPaperBtn">
+              <i class="fas fa-plus"></i> Add Paper
+            </button>
+            <div class="form-msg" id="formMsg"></div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══ FIREBASE ═══ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fSignOut, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getFirestore, collection, getDocs, doc, getDoc,
+      updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ══════════════════════════════════════════
+    //  CONFIG — same as index.html
+    // ══════════════════════════════════════════
+    const firebaseConfig = {
+      apiKey:            "AIzaSyB0_MwAK5naZyhCN_qXEHyNvVyZnJRUnfg",
+      authDomain:        "ac-final-e14a7.firebaseapp.com",
+      databaseURL:       "https://ac-final-e14a7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "ac-final-e14a7",
+      storageBucket:     "ac-final-e14a7.firebasestorage.app",
+      messagingSenderId: "349745996549",
+      appId:             "1:349745996549:web:68c318f32958d37e260d6c",
+      measurementId:     "G-N4SL1WHTZN"
+    };
+
+    const ADMIN_EMAILS = ["ianupama835@gmail.com"];
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let allStudents = [];
+
+    // ─── AUTH ───
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        document.getElementById("authGate").style.display    = "flex";
+        document.getElementById("adminPanel").style.display  = "none";
+        document.getElementById("notAdminGate").style.display = "none";
+        return;
+      }
+
+      if (!ADMIN_EMAILS.includes(user.email)) {
+        document.getElementById("authGate").style.display     = "none";
+        document.getElementById("adminPanel").style.display   = "none";
+        document.getElementById("notAdminGate").style.display = "flex";
+        return;
+      }
+
+      document.getElementById("authGate").style.display     = "none";
+      document.getElementById("notAdminGate").style.display = "none";
+      document.getElementById("adminPanel").style.display   = "flex";
+
+      document.getElementById("adminAvatar").src            = user.photoURL || "";
+      document.getElementById("adminName").textContent      = user.displayName || "Admin";
+      document.getElementById("adminEmail").textContent     = user.email || "";
+
+      loadStudents();
+      loadPapersAdmin();
+    });
+
+    document.getElementById("gateLoginBtn").onclick = async () => {
+      try { await signInWithPopup(auth, provider); }
+      catch (e) { if (e.code !== "auth/popup-closed-by-user") alert("Login failed."); }
+    };
+
+    window.doSignOut = async () => { await fSignOut(auth); };
+
+    // ─── STUDENTS ───
+    window.loadStudents = async function() {
+      document.getElementById("studentsBody").innerHTML =
+        '<tr><td colspan="5" class="loading-row"><div class="spinner"></div> Loading...</td></tr>';
+
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        allStudents = [];
+        snap.forEach(d => allStudents.push({ id: d.id, ...d.data() }));
+
+        document.getElementById("totalStudents").textContent = allStudents.length;
+        document.getElementById("paidStudents").textContent  = allStudents.filter(s => s.hasPaid).length;
+        renderStudents(allStudents);
+      } catch (e) {
+        document.getElementById("studentsBody").innerHTML =
+          '<tr><td colspan="5" class="loading-row error">Error loading students.</td></tr>';
+      }
+    };
+
+    function renderStudents(students) {
+      if (students.length === 0) {
+        document.getElementById("studentsBody").innerHTML =
+          '<tr><td colspan="5" class="loading-row">No students registered yet.</td></tr>';
+        return;
+      }
+      document.getElementById("studentsBody").innerHTML = students.map(s => `
+        <tr>
+          <td>
+            <div class="student-info">
+              ${s.photoURL ? `<img src="${s.photoURL}" alt="" class="student-avatar" />` : '<div class="student-avatar-placeholder"><i class="fas fa-user"></i></div>'}
+              <span>${s.name || "Unknown"}</span>
+            </div>
+          </td>
+          <td class="email-cell">${s.email || "-"}</td>
+          <td>${s.createdAt?.toDate ? formatDate(s.createdAt.toDate()) : "-"}</td>
+          <td>
+            ${s.hasPaid
+              ? '<span class="badge-paid"><i class="fas fa-check-circle"></i> Paid</span>'
+              : '<span class="badge-unpaid"><i class="fas fa-clock"></i> Pending</span>'}
+          </td>
+          <td>
+            <button class="btn-toggle ${s.hasPaid ? 'revoke' : 'grant'}"
+              onclick="togglePayment('${s.id}', ${s.hasPaid})">
+              ${s.hasPaid
+                ? '<i class="fas fa-times-circle"></i> Revoke'
+                : '<i class="fas fa-check-circle"></i> Grant Access'}
+            </button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    window.filterStudents = function() {
+      const q = document.getElementById("studentSearch").value.toLowerCase();
+      const filtered = allStudents.filter(s =>
+        (s.name || "").toLowerCase().includes(q) ||
+        (s.email || "").toLowerCase().includes(q)
+      );
+      renderStudents(filtered);
+    };
+
+    window.togglePayment = async function(uid, current) {
+      const newStatus = !current;
+      const btn = event.target.closest("button");
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner-sm"></div>';
+      try {
+        await updateDoc(doc(db, "users", uid), { hasPaid: newStatus });
+        await loadStudents();
+      } catch (e) {
+        alert("Error updating status.");
+        btn.disabled = false;
+      }
+    };
+
+    // ─── PAPERS ───
+    window.loadPapersAdmin = async function() {
+      document.getElementById("papersAdminGrid").innerHTML =
+        '<div class="loading-row"><div class="spinner"></div> Loading...</div>';
+
+      try {
+        const snap = await getDocs(collection(db, "papers"));
+        const papers = [];
+        snap.forEach(d => papers.push({ id: d.id, ...d.data() }));
+
+        if (papers.length === 0) {
+          document.getElementById("papersAdminGrid").innerHTML =
+            '<div class="loading-row">No papers yet. Add one from the "Add Paper" tab.</div>';
+          return;
+        }
+
+        document.getElementById("papersAdminGrid").innerHTML = papers.map(p => `
+          <div class="admin-paper-card">
+            <div class="admin-paper-top">
+              <span class="paper-type-badge ${p.type}">${getPaperLabel(p.type)}</span>
+              <button class="btn-delete" onclick="deletePaper('${p.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div class="admin-paper-icon"><i class="fas fa-file-pdf"></i></div>
+            <h3>${p.title}</h3>
+            <p>${p.description || ""}</p>
+            <div class="admin-paper-meta">
+              <span><i class="fas fa-calendar"></i> ${p.year || 2026}</span>
+            </div>
+            <a href="${p.pdfUrl}" target="_blank" class="btn-preview">
+              <i class="fas fa-external-link-alt"></i> Preview PDF
+            </a>
+          </div>
+        `).join("");
+      } catch (e) {
+        document.getElementById("papersAdminGrid").innerHTML =
+          '<div class="loading-row error">Error loading papers.</div>';
+      }
+    };
+
+    window.deletePaper = async function(id) {
+      if (!confirm("Delete this paper? This cannot be undone.")) return;
+      try {
+        await deleteDoc(doc(db, "papers", id));
+        await loadPapersAdmin();
+      } catch (e) {
+        alert("Error deleting paper.");
+      }
+    };
+
+    window.addPaper = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("addPaperBtn");
+      const msg = document.getElementById("formMsg");
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner-sm"></div> Adding...';
+      msg.textContent = "";
+      msg.className   = "form-msg";
+
+      const data = {
+        title:       document.getElementById("paperTitle").value.trim(),
+        type:        document.getElementById("paperType").value,
+        year:        parseInt(document.getElementById("paperYear").value) || 2026,
+        description: document.getElementById("paperDesc").value.trim(),
+        pdfUrl:      document.getElementById("paperPdfUrl").value.trim(),
+        createdAt:   serverTimestamp()
+      };
+
+      try {
+        await addDoc(collection(db, "papers"), data);
+        msg.textContent = "Paper added successfully!";
+        msg.className   = "form-msg success";
+        e.target.reset();
+        await loadPapersAdmin();
+      } catch (err) {
+        msg.textContent = "Error adding paper. Please try again.";
+        msg.className   = "form-msg error-msg";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Add Paper';
+      }
+    };
+
+    // ─── HELPERS ───
+    function formatDate(date) {
+      return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function getPaperLabel(type) {
+      return { past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay" }[type] || "Paper";
+    }
+  </script>
+
+  <script>
+    window.showTab = function(tab, btn) {
+      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+      document.getElementById("tab-" + tab).classList.add("active");
+      btn.classList.add("active");
+      document.getElementById("pageTitle").textContent =
+        { students: "Students", papers: "Papers", addPaper: "Add Paper" }[tab];
+    };
+
+    window.toggleSidebar = function() {
+      document.getElementById("sidebar").classList.toggle("open");
+    };
+  </script>
+
+</body>
+</html>
