@@ -235,6 +235,32 @@
     </div>
   </footer>
 
+  <!-- ═══ LOGIN PROMPT MODAL ═══ -->
+  <div class="modal-overlay" id="loginPromptModal" onclick="closeLoginPrompt(event)">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-lock" style="color:var(--primary);margin-right:8px;"></i>Login Required</h3>
+        <button class="modal-close" onclick="closeLoginPrompt()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="payment-content">
+          <div class="payment-icon" style="background:#eff6ff;">
+            <i class="fas fa-user-circle" style="color:var(--primary);"></i>
+          </div>
+          <h3>Sign in to View Papers</h3>
+          <p>Please login with your Google account to access 2026 A/L Biology papers.</p>
+          <button class="btn-primary" onclick="signInWithGoogle()" style="width:100%;justify-content:center;margin-top:8px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px;height:20px;"/>
+            Sign in with Google
+          </button>
+          <button class="btn-whatsapp-big" onclick="openWhatsApp()" style="width:100%;justify-content:center;margin-top:10px;">
+            <i class="fab fa-whatsapp"></i> Contact us on WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ PROFILE MODAL ═══ -->
   <div class="modal-overlay" id="profileModal" onclick="closeProfileModal(event)">
     <div class="modal-box profile-modal-box">
@@ -334,7 +360,7 @@
   <!-- ═══ FIREBASE ═══ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged }
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -364,27 +390,42 @@
     let activeFilter    = "all";
 
     // ── AUTH STATE ──
+    // Load papers for everyone on page load (no login needed to see list)
+    loadPapers();
+
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
-        const userRef = doc(db, "users", user.uid);
-        const snap    = await getDoc(userRef);
-        if (!snap.exists()) {
-          await setDoc(userRef, {
-            email:     user.email,
-            name:      user.displayName || "",
-            photoURL:  user.photoURL || "",
-            phone:     "",
-            hasPaid:   false,
-            createdAt: serverTimestamp()
-          });
+        showUserUI(user, { hasPaid: false, name: user.displayName || "", phone: "" });
+        try {
+          const userRef   = doc(db, "users", user.uid);
+          const snap      = await getDoc(userRef);
+          const safeKey   = user.email.replace(/\./g, "_").replace(/@/g, "__");
+          const preSnap   = await getDoc(doc(db, "preApproved", safeKey));
+          const preApproved = preSnap.exists();
+
+          if (!snap.exists()) {
+            await setDoc(userRef, {
+              email:     user.email,
+              name:      user.displayName || "",
+              photoURL:  user.photoURL || "",
+              phone:     "",
+              hasPaid:   preApproved,
+              createdAt: serverTimestamp()
+            });
+          } else if (preApproved && !snap.data().hasPaid) {
+            await updateDoc(userRef, { hasPaid: true });
+          }
+          currentUserData = (await getDoc(userRef)).data();
+          showUserUI(user, currentUserData);
+        } catch {
+          currentUserData = { hasPaid: false, name: user.displayName || "", phone: "" };
         }
-        currentUserData = (await getDoc(userRef)).data();
-        showUserUI(user, currentUserData);
+        // Reload papers so lock/unlock state updates for this user
         loadPapers();
       } else {
         showLoginUI();
-        showNotLoggedMessage();
+        // Papers still visible — just locked
       }
     });
 
@@ -409,14 +450,10 @@
     }
 
     function showLoginUI() {
-      document.getElementById("authSection").style.display   = "block";
-      document.getElementById("userSection").style.display   = "none";
+      document.getElementById("authSection").style.display    = "block";
+      document.getElementById("userSection").style.display    = "none";
       document.getElementById("navProfileLeft").style.display = "none";
-    }
-
-    function showNotLoggedMessage() {
-      document.getElementById("notLoggedMsg").style.display = "flex";
-      document.getElementById("papersGrid").innerHTML = "";
+      document.getElementById("notLoggedMsg").style.display   = "none";
     }
 
     // ── LOAD PAPERS ──
@@ -483,13 +520,20 @@
     window.openPaper = function(id, titleEnc, pdfEnc) {
       const title  = decodeURIComponent(titleEnc);
       const pdfUrl = decodeURIComponent(pdfEnc);
+
+      // Not logged in → show login modal
+      if (!currentUser) {
+        document.getElementById("loginPromptModal").classList.add("active");
+        return;
+      }
+      // Logged in but not paid → show payment modal
       if (!currentUserData?.hasPaid) {
         document.getElementById("paymentPaperTitle").textContent = title;
-        document.getElementById("paymentEmailNote").textContent  =
-          currentUser ? `Your Gmail: ${currentUser.email}` : "";
+        document.getElementById("paymentEmailNote").textContent  = `Your Gmail: ${currentUser.email}`;
         document.getElementById("paymentModal").classList.add("active");
         return;
       }
+      // Paid → open PDF
       if (!pdfUrl) { alert("PDF not available yet."); return; }
       document.getElementById("pdfModalTitle").textContent = title;
       document.getElementById("pdfFrame").src = pdfUrl;
@@ -505,9 +549,12 @@
 
     // ── AUTH ──
     window.signInWithGoogle = async function() {
-      try { await signInWithPopup(auth, provider); }
-      catch(e) { if (e.code !== "auth/popup-closed-by-user") alert("Login failed. Try again."); }
+      try { await signInWithRedirect(auth, provider); }
+      catch(e) { alert("Login failed. Try again."); }
     };
+
+    // Handle redirect result on page load
+    getRedirectResult(auth).catch(() => {});
 
     window.doSignOut = async function() { await firebaseSignOut(auth); };
 
@@ -590,6 +637,11 @@
     };
 
     // ── MODAL HELPERS ──
+    window.closeLoginPrompt = function(e) {
+      if (!e || e.target.id === "loginPromptModal") {
+        document.getElementById("loginPromptModal").classList.remove("active");
+      }
+    };
     window.closePdfModal = function(e) {
       if (!e || e.target.id === "pdfModal") {
         document.getElementById("pdfModal").classList.remove("active");
