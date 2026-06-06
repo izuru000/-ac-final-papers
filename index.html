@@ -153,6 +153,7 @@
 
       <div class="papers-tabs">
         <button class="tab-btn active" onclick="filterPapers('all', this)">All Papers</button>
+        <button class="tab-btn tab-final" onclick="filterPapers('final', this)">2026 Final Papers</button>
         <button class="tab-btn" onclick="filterPapers('past', this)">Past Papers</button>
         <button class="tab-btn" onclick="filterPapers('model', this)">Model Papers</button>
         <button class="tab-btn" onclick="filterPapers('mcq', this)">MCQ Papers</button>
@@ -520,7 +521,7 @@
     }
 
     function getPaperTypeLabel(type) {
-      return { past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay" }[type] || "Paper";
+      return { past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay", final: "2026 Final Paper" }[type] || "Paper";
     }
 
     // ── OPEN PAPER ──
