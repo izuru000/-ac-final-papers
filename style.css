@@ -1337,9 +1337,12 @@ body {
 }
 
 @media (max-width: 768px) {
-  .nav-links     { display: none; }
+  .nav-links          { display: none; }
   .btn-whatsapp-nav span { display: none; }
-  .mobile-menu-btn { display: flex; }
+  .mobile-menu-btn    { display: flex; }
+  .nav-profile-info   { display: none; }
+  .nav-profile-left   { padding: 4px; border-radius: 50%; }
+  .nav-avatar-left    { width: 36px; height: 36px; }
 
   .hero { padding: 0 0 40px; }
   .hero-content { padding: 90px 20px 40px; }
