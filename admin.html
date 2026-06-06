@@ -184,6 +184,7 @@
                 <label for="paperType">Paper Type *</label>
                 <select id="paperType" required>
                   <option value="">Select type...</option>
+                  <option value="final">2026 Final Paper</option>
                   <option value="past">Past Paper</option>
                   <option value="model">Model Paper</option>
                   <option value="mcq">MCQ Paper</option>
@@ -583,7 +584,7 @@
     }
 
     function getPaperLabel(type) {
-      return { past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay" }[type] || "Paper";
+      return { final: "2026 Final Paper", past: "Past Paper", model: "Model Paper", mcq: "MCQ", essay: "Essay" }[type] || "Paper";
     }
   </script>
 
