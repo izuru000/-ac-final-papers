@@ -644,6 +644,47 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── Access Tab ─── */
+.access-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.access-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.access-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.access-email {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  word-break: break-all;
+}
+
+@media (max-width: 900px) {
+  .access-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .sidebar {
