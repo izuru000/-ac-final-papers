@@ -361,7 +361,7 @@
   <!-- ═══ FIREBASE ═══ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut, onAuthStateChanged }
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -390,71 +390,91 @@
     let allPapers       = [];
     let activeFilter    = "all";
 
-    // ── AUTH STATE ──
-    // Load papers for everyone on page load (no login needed to see list)
-    loadPapers();
-
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      if (user) {
-        showUserUI(user, { hasPaid: false, name: user.displayName || "", phone: "" });
-        try {
-          const userRef   = doc(db, "users", user.uid);
-          const snap      = await getDoc(userRef);
-          const safeKey   = user.email.replace(/\./g, "_").replace(/@/g, "__");
-          const preSnap   = await getDoc(doc(db, "preApproved", safeKey));
-          const preApproved = preSnap.exists();
-
-          if (!snap.exists()) {
-            await setDoc(userRef, {
-              email:     user.email,
-              name:      user.displayName || "",
-              photoURL:  user.photoURL || "",
-              phone:     "",
-              hasPaid:   preApproved,
-              createdAt: serverTimestamp()
-            });
-          } else if (preApproved && !snap.data().hasPaid) {
-            await updateDoc(userRef, { hasPaid: true });
-          }
-          currentUserData = (await getDoc(userRef)).data();
-          showUserUI(user, currentUserData);
-        } catch {
-          currentUserData = { hasPaid: false, name: user.displayName || "", phone: "" };
-        }
-        // Reload papers so lock/unlock state updates for this user
-        loadPapers();
-      } else {
-        showLoginUI();
-        // Papers still visible — just locked
-      }
-    });
-
-    function showUserUI(user, userData) {
-      // Hide login button
-      document.getElementById("authSection").style.display  = "none";
-      // Show logout + admin buttons
-      document.getElementById("userSection").style.display  = "flex";
-
-      // LEFT SIDE PROFILE
-      const leftProfile = document.getElementById("navProfileLeft");
-      leftProfile.style.display = "flex";
-      document.getElementById("navAvatarLeft").src   = user.photoURL || "";
-      document.getElementById("navNameLeft").textContent = userData?.name || user.displayName?.split(" ")[0] || "Student";
-      document.getElementById("navStatusLeft").textContent = userData?.hasPaid ? "Access Active" : "Payment Pending";
-      document.getElementById("navStatusLeft").className = "nav-profile-status " + (userData?.hasPaid ? "status-paid" : "status-pending");
-
-      // Admin link
+    // ── UI FUNCTIONS ──
+    function updateNavProfile(user, hasPaid) {
+      // Hide login btn, show logout btn
+      document.getElementById("authSection").style.display    = "none";
+      document.getElementById("userSection").style.display    = "flex";
+      // Show profile on LEFT
+      document.getElementById("navProfileLeft").style.display = "flex";
+      document.getElementById("navAvatarLeft").src            = user.photoURL || "";
+      document.getElementById("navNameLeft").textContent      = user.displayName?.split(" ")[0] || "Student";
+      document.getElementById("navStatusLeft").textContent    = hasPaid ? "Access Active" : "Payment Pending";
+      document.getElementById("navStatusLeft").className      = "nav-profile-status " + (hasPaid ? "status-paid" : "status-pending");
       if (ADMIN_EMAILS.includes(user.email)) {
         document.getElementById("adminLink").style.display = "inline-flex";
       }
     }
 
-    function showLoginUI() {
+    function resetToLoggedOut() {
       document.getElementById("authSection").style.display    = "block";
       document.getElementById("userSection").style.display    = "none";
       document.getElementById("navProfileLeft").style.display = "none";
-      document.getElementById("notLoggedMsg").style.display   = "none";
+      showLoginCard();
+    }
+
+    // ── AUTH STATE ──
+    showLoginCard(); // show login card on first load
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (!user) { resetToLoggedOut(); return; }
+
+      // 1. Show profile immediately with Google data
+      currentUserData = { hasPaid: false, name: user.displayName || "", phone: "" };
+      updateNavProfile(user, false);
+      loadPapers();
+
+      // 2. Load Firestore data in background
+      try {
+        const userRef     = doc(db, "users", user.uid);
+        const safeKey     = user.email.replace(/\./g, "_").replace(/@/g, "__");
+        const [snap, pre] = await Promise.all([
+          getDoc(userRef),
+          getDoc(doc(db, "preApproved", safeKey))
+        ]);
+        const preApproved = pre.exists();
+
+        if (!snap.exists()) {
+          await setDoc(userRef, {
+            email: user.email, name: user.displayName || "",
+            photoURL: user.photoURL || "", phone: "",
+            hasPaid: preApproved, createdAt: serverTimestamp()
+          });
+        } else if (preApproved && !snap.data().hasPaid) {
+          await updateDoc(userRef, { hasPaid: true });
+        }
+        currentUserData = (await getDoc(userRef)).data();
+        updateNavProfile(user, currentUserData.hasPaid);
+        loadPapers(); // reload with correct paid status
+      } catch (e) {
+        console.warn("Firestore error:", e.message);
+      }
+    });
+
+    // Legacy alias used by profile modal
+    function showUserUI(user, userData) {
+      updateNavProfile(user, userData?.hasPaid || false);
+    }
+
+    // ── LOGIN CARD ──
+    function showLoginCard() {
+      document.getElementById("notLoggedMsg").style.display = "none";
+      document.getElementById("papersGrid").innerHTML = `
+        <div class="login-to-view-card">
+          <div class="ltv-icon"><i class="fas fa-microscope"></i></div>
+          <h3>2026 A/L Biology Papers</h3>
+          <p>Sign in with your Google account to view all Biology papers.</p>
+          <button class="btn-google-big" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
+            Login with Google to View Papers
+          </button>
+          <div class="ltv-divider"><span>or</span></div>
+          <button class="btn-whatsapp-big" onclick="openWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Contact us on WhatsApp
+          </button>
+          <p class="ltv-note">Already paid? Login to access your papers instantly.</p>
+        </div>`;
     }
 
     // ── LOAD PAPERS ──
@@ -566,11 +586,16 @@
 
     // ── AUTH ──
     window.signInWithGoogle = async function() {
-      try { await signInWithRedirect(auth, provider); }
-      catch(e) { alert("Login failed. Try again."); }
+      try {
+        await signInWithPopup(auth, provider);
+        // onAuthStateChanged handles everything after this
+      } catch(e) {
+        if (e.code === "auth/popup-blocked") {
+          await signInWithRedirect(auth, provider);
+        }
+      }
     };
 
-    // Handle redirect result on page load
     getRedirectResult(auth).catch(() => {});
 
     window.doSignOut = async function() { await firebaseSignOut(auth); };
