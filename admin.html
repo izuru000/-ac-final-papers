@@ -196,6 +196,27 @@
               </div>
             </div>
             <div class="form-group">
+              <label>Access Type *</label>
+              <div class="access-toggle-row">
+                <label class="access-option paid-option">
+                  <input type="radio" name="accessType" value="paid" checked />
+                  <div class="access-option-card">
+                    <i class="fas fa-lock"></i>
+                    <strong>Paid Only</strong>
+                    <span>Fee gewwa witharai view karana puluwan</span>
+                  </div>
+                </label>
+                <label class="access-option free-option">
+                  <input type="radio" name="accessType" value="free" />
+                  <div class="access-option-card">
+                    <i class="fas fa-lock-open"></i>
+                    <strong>Free for All</strong>
+                    <span>Login nathe hamotama balanna puluwan</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
               <label for="paperDesc">Description</label>
               <input type="text" id="paperDesc" placeholder="e.g. Complete Biology past paper with marking scheme" />
             </div>
@@ -482,9 +503,14 @@
           <div class="admin-paper-card">
             <div class="admin-paper-top">
               <span class="paper-type-badge ${p.type}">${getPaperLabel(p.type)}</span>
-              <button class="btn-delete" onclick="deletePaper('${p.id}')">
-                <i class="fas fa-trash"></i>
-              </button>
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${p.isFree
+                  ? '<span class="free-badge"><i class="fas fa-lock-open"></i> Free</span>'
+                  : '<span class="paid-badge"><i class="fas fa-lock"></i> Paid</span>'}
+                <button class="btn-delete" onclick="deletePaper('${p.id}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
             <div class="admin-paper-icon"><i class="fas fa-file-pdf"></i></div>
             <h3>${p.title}</h3>
@@ -523,12 +549,14 @@
       msg.textContent = "";
       msg.className   = "form-msg";
 
+      const accessType = document.querySelector('input[name="accessType"]:checked').value;
       const data = {
         title:       document.getElementById("paperTitle").value.trim(),
         type:        document.getElementById("paperType").value,
         year:        parseInt(document.getElementById("paperYear").value) || 2026,
         description: document.getElementById("paperDesc").value.trim(),
         pdfUrl:      document.getElementById("paperPdfUrl").value.trim(),
+        isFree:      accessType === "free",
         createdAt:   serverTimestamp()
       };
 
